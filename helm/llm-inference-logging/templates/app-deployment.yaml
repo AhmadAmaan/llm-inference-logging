@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ollive-inference-console.fullname" . }}
+  name: {{ include "llm-inference-logging.fullname" . }}
   labels:
-    {{- include "ollive-inference-console.labels" . | nindent 4 }}
+    {{- include "llm-inference-logging.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "ollive-inference-console.selectorLabels" . | nindent 6 }}
+      {{- include "llm-inference-logging.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "ollive-inference-console.selectorLabels" . | nindent 8 }}
+        {{- include "llm-inference-logging.selectorLabels" . | nindent 8 }}
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
@@ -38,9 +38,9 @@ spec:
             - containerPort: {{ .Values.service.targetPort }}
           envFrom:
             - configMapRef:
-                name: {{ include "ollive-inference-console.fullname" . }}-config
+                name: {{ include "llm-inference-logging.fullname" . }}-config
             - secretRef:
-                name: {{ include "ollive-inference-console.fullname" . }}-secrets
+                name: {{ include "llm-inference-logging.fullname" . }}-secrets
           readinessProbe:
             httpGet:
               path: /

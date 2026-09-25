@@ -4,26 +4,26 @@ This directory packages the self-hosted Kubernetes deployment as a Helm chart.
 
 ## Chart Location
 
-`helm/ollive-inference-console`
+`helm/llm-inference-logging`
 
 ## Install
 
 ```bash
-helm upgrade --install ollive ./helm/ollive-inference-console \
-  --namespace ollive-assignment \
+helm upgrade --install inference-logging ./helm/llm-inference-logging \
+  --namespace llm-inference-logging \
   --create-namespace
 ```
 
 ## Common Overrides
 
 ```bash
-helm upgrade --install ollive ./helm/ollive-inference-console \
-  --namespace ollive-assignment \
+helm upgrade --install inference-logging ./helm/llm-inference-logging \
+  --namespace llm-inference-logging \
   --create-namespace \
-  --set image.repository=your-registry/ollive-assignment \
+  --set image.repository=your-registry/llm-inference-logging \
   --set image.tag=latest \
   --set ingress.enabled=true \
-  --set ingress.hosts[0].host=ollive.local
+  --set ingress.hosts[0].host=inference.local
 ```
 
 ## External Database
@@ -31,11 +31,11 @@ helm upgrade --install ollive ./helm/ollive-inference-console \
 If you want to use an external Postgres instance:
 
 ```bash
-helm upgrade --install ollive ./helm/ollive-inference-console \
-  --namespace ollive-assignment \
+helm upgrade --install inference-logging ./helm/llm-inference-logging \
+  --namespace llm-inference-logging \
   --create-namespace \
   --set postgres.enabled=false \
-  --set secrets.databaseUrl='postgresql://user:password@db-host:5432/ollive_inference'
+  --set secrets.databaseUrl='postgresql://user:password@db-host:5432/llm_inference'
 ```
 
 ## External Redis
@@ -43,8 +43,8 @@ helm upgrade --install ollive ./helm/ollive-inference-console \
 If you want to use an external Redis instance for the ingestion queue:
 
 ```bash
-helm upgrade --install ollive ./helm/ollive-inference-console \
-  --namespace ollive-assignment \
+helm upgrade --install inference-logging ./helm/llm-inference-logging \
+  --namespace llm-inference-logging \
   --create-namespace \
   --set redis.enabled=false \
   --set secrets.redisUrl='redis://redis-host:6379'

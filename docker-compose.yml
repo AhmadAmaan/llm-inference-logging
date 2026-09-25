@@ -1,9 +1,9 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: ollive-postgres
+    container_name: llm-inference-postgres
     environment:
-      POSTGRES_DB: ollive_inference
+      POSTGRES_DB: llm_inference
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -11,14 +11,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ollive_inference"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d llm_inference"]
       interval: 5s
       timeout: 5s
       retries: 20
 
   redis:
     image: redis:7-alpine
-    container_name: ollive-redis
+    container_name: llm-inference-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -37,7 +37,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/ollive_inference
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/llm_inference
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -63,7 +63,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/ollive_inference
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/llm_inference
       REDIS_URL: redis://redis:6379
       INGESTION_QUEUE_NAME: ${INGESTION_QUEUE_NAME:-inference-events}
       INGESTION_QUEUE_CONCURRENCY: ${INGESTION_QUEUE_CONCURRENCY:-4}

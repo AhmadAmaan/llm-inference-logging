@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ollive-worker
-  namespace: ollive-assignment
+  name: llm-inference-worker
+  namespace: llm-inference-logging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ollive-worker
+      app: llm-inference-worker
   template:
     metadata:
       labels:
-        app: ollive-worker
+        app: llm-inference-worker
     spec:
       containers:
         - name: worker
-          image: ollive-assignment:latest
+          image: llm-inference-logging:latest
           imagePullPolicy: IfNotPresent
           command:
             - npm
@@ -23,9 +23,9 @@ spec:
             - worker
           envFrom:
             - configMapRef:
-                name: ollive-app-config
+                name: llm-inference-app-config
             - secretRef:
-                name: ollive-app-secrets
+                name: llm-inference-app-secrets
           resources:
             requests:
               cpu: 250m

@@ -19,16 +19,16 @@
 - The ingestion layer owns validation and persistence of telemetry.
 - The database keeps chat records and operational telemetry queryable without coupling one concern to the other.
 
-## Feedback-Driven Changes
+## Instrumentation Boundaries
 
-- The SDK is no longer coupled to the reference UI app. The UI app calls into the same reusable SDK surface that any other app could import.
+- The SDK is independent of the reference UI app. The UI app calls into the same reusable SDK surface that any other app can import.
 - The primary integration mode is wrapper-based instrumentation so an external app can wrap its own inference function directly.
 - Monkey-patching is available as a secondary adoption path:
   - `instrumentFetch(...)` for provider-agnostic HTTP interception
   - `instrumentOpenAIClient(...)` for common OpenAI client methods
   - `instrumentAnthropicClient(...)` for common Anthropic client methods
-- Redaction moved from pattern-only masking to a staged pipeline that combines classification, structured field redaction, and pattern/entity masking.
-- Ingestion moved from in-process async handling to a queue-backed worker model with separate runtime execution.
+- Redaction uses a staged pipeline that combines classification, structured field redaction, and pattern/entity masking.
+- Ingestion uses a queue-backed worker model with separate runtime execution.
 
 ## Event-First Ingestion
 
@@ -87,7 +87,7 @@ With the current implementation, the correct runtime split is UI app pod plus wo
 
 - PostgreSQL is the primary persistence layer because it fits the relational access patterns and deployment goals.
 - The app can be deployed cleanly through Docker Compose or Kubernetes.
-- SDK emission is asynchronous, and ingestion materialization now happens in a dedicated worker, which removes telemetry persistence from the direct request critical path.
+- SDK emission is asynchronous, and ingestion materialization happens in a dedicated worker, which removes telemetry persistence from the direct request critical path.
 - The current cancellation registry is in memory, so the write path should remain a single active app replica unless that state is externalized.
 - The next scaling step would be dead-letter handling, autoscaling workers against queue depth, and moving cancellation state onto shared infrastructure.
 

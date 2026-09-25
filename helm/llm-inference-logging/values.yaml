@@ -2,7 +2,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: ollive-assignment
+  repository: llm-inference-logging
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -34,7 +34,7 @@ runtime:
   ingestionReconciliationIntervalMs: "15000"
 
 secrets:
-  databaseUrl: postgresql://postgres:postgres@{{POSTGRES_HOST}}:5432/ollive_inference
+  databaseUrl: postgresql://postgres:postgres@{{POSTGRES_HOST}}:5432/llm_inference
   redisUrl: redis://{{REDIS_HOST}}:6379
   openaiApiKey: ""
   anthropicApiKey: ""
@@ -47,7 +47,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   hosts:
-    - host: ollive.local
+    - host: inference.local
       paths:
         - path: /
           pathType: Prefix
@@ -61,7 +61,7 @@ postgres:
   service:
     port: 5432
   auth:
-    database: ollive_inference
+    database: llm_inference
     username: postgres
   persistence:
     size: 10Gi

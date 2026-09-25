@@ -93,14 +93,14 @@ const schemaSql = `
 `;
 
 const globalForDb = globalThis as typeof globalThis & {
-  __ollivePool?: Pool;
-  __olliveSchemaReady?: Promise<void>;
+  __llmInferencePool?: Pool;
+  __llmInferenceSchemaReady?: Promise<void>;
 };
 
 function getDatabaseUrl() {
   return (
     process.env.DATABASE_URL ||
-    "postgresql://postgres:postgres@127.0.0.1:5432/ollive_inference"
+    "postgresql://postgres:postgres@127.0.0.1:5432/llm_inference"
   );
 }
 
@@ -110,18 +110,18 @@ function createPool() {
   });
 }
 
-export const pool = globalForDb.__ollivePool ?? createPool();
+export const pool = globalForDb.__llmInferencePool ?? createPool();
 
-if (!globalForDb.__ollivePool) {
-  globalForDb.__ollivePool = pool;
+if (!globalForDb.__llmInferencePool) {
+  globalForDb.__llmInferencePool = pool;
 }
 
 async function ensureSchema() {
-  if (!globalForDb.__olliveSchemaReady) {
-    globalForDb.__olliveSchemaReady = pool.query(schemaSql).then(() => undefined);
+  if (!globalForDb.__llmInferenceSchemaReady) {
+    globalForDb.__llmInferenceSchemaReady = pool.query(schemaSql).then(() => undefined);
   }
 
-  await globalForDb.__olliveSchemaReady;
+  await globalForDb.__llmInferenceSchemaReady;
 }
 
 export async function query<T extends QueryResultRow = QueryResultRow>(
@@ -165,6 +165,6 @@ export async function withTransaction<T>(
 
 export async function closePool() {
   await pool.end();
-  globalForDb.__ollivePool = undefined;
-  globalForDb.__olliveSchemaReady = undefined;
+  globalForDb.__llmInferencePool = undefined;
+  globalForDb.__llmInferenceSchemaReady = undefined;
 }

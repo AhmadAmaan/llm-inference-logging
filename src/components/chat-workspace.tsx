@@ -573,7 +573,7 @@ export function ChatWorkspace() {
       <section className="animated-rise glass-panel overflow-hidden rounded-[2rem] border border-[var(--border)]">
         <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 md:flex-row md:items-end md:justify-between md:px-7">
           <div className="max-w-4xl">
-            <p className="label mb-3">Founding Engineer Assignment</p>
+            <p className="label mb-3">LLM Inference Logging</p>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
                 Inference console with portable storage, provider routing, and telemetry dashboards.

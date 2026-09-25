@@ -1,5 +1,5 @@
 1. Install the chart:
-   helm upgrade --install {{ .Release.Name }} ./helm/ollive-inference-console --namespace {{ .Release.Namespace }} --create-namespace
+   helm upgrade --install {{ .Release.Name }} ./helm/llm-inference-logging --namespace {{ .Release.Namespace }} --create-namespace
 
 2. Access the app:
 {{- if .Values.ingress.enabled }}
@@ -8,7 +8,7 @@
    - {{ .host }}
 {{- end }}
 {{- else }}
-   kubectl port-forward svc/{{ include "ollive-inference-console.fullname" . }} 3000:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+   kubectl port-forward svc/{{ include "llm-inference-logging.fullname" . }} 3000:{{ .Values.service.port }} -n {{ .Release.Namespace }}
 {{- end }}
 
 3. Update image values before production use:

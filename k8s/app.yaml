@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ollive-app
-  namespace: ollive-assignment
+  name: llm-inference-app
+  namespace: llm-inference-logging
 spec:
   selector:
-    app: ollive-app
+    app: llm-inference-app
   ports:
     - name: http
       port: 80
@@ -14,29 +14,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ollive-app
-  namespace: ollive-assignment
+  name: llm-inference-app
+  namespace: llm-inference-logging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ollive-app
+      app: llm-inference-app
   template:
     metadata:
       labels:
-        app: ollive-app
+        app: llm-inference-app
     spec:
       containers:
         - name: web
-          image: ollive-assignment:latest
+          image: llm-inference-logging:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           envFrom:
             - configMapRef:
-                name: ollive-app-config
+                name: llm-inference-app-config
             - secretRef:
-                name: ollive-app-secrets
+                name: llm-inference-app-secrets
           readinessProbe:
             httpGet:
               path: /

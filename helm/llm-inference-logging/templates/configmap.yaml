@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "ollive-inference-console.fullname" . }}-config
+  name: {{ include "llm-inference-logging.fullname" . }}-config
   labels:
-    {{- include "ollive-inference-console.labels" . | nindent 4 }}
+    {{- include "llm-inference-logging.labels" . | nindent 4 }}
 data:
-  DATABASE_HOST: {{ include "ollive-inference-console.databaseHost" . | quote }}
+  DATABASE_HOST: {{ include "llm-inference-logging.databaseHost" . | quote }}
   DATABASE_PORT: {{ .Values.postgres.service.port | quote }}
   DATABASE_NAME: {{ .Values.postgres.auth.database | quote }}
   DATABASE_USER: {{ .Values.postgres.auth.username | quote }}
-  REDIS_URL: {{ include "ollive-inference-console.redisUrl" . | quote }}
+  REDIS_URL: {{ include "llm-inference-logging.redisUrl" . | quote }}
   DEFAULT_PROVIDER: {{ .Values.runtime.defaultProvider | quote }}
   LLM_MODEL: {{ .Values.runtime.llmModel | quote }}
   ANTHROPIC_MODEL: {{ .Values.runtime.anthropicModel | quote }}

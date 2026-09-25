@@ -1,6 +1,6 @@
 # Kubernetes Deployment
 
-This folder provides a self-hosted deployment path for the assignment.
+This folder provides a self-hosted deployment path for LLM Inference Logging.
 
 ## Included Manifests
 
@@ -30,10 +30,10 @@ kubectl apply -f k8s/ingress.yaml
 
 ## Image
 
-Build and push the app image, then replace `ollive-assignment:latest` in `app.yaml` with your registry reference.
+Build and push the app image, then replace `llm-inference-logging:latest` in both `app.yaml` and `worker.yaml` with your registry reference.
 
 ## Tradeoffs
 
 - The app deployment is intentionally set to one replica because request cancellation is tracked in memory.
-- Postgres and Redis are deployed in-cluster to keep the self-hosted path complete and easy to evaluate.
+- Postgres and Redis are deployed in-cluster to provide a complete self-hosted setup.
 - Ingestion processing runs in a separate worker deployment, while cancellation still remains single-replica until that state is externalized.

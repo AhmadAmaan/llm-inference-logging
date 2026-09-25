@@ -4,14 +4,14 @@ type GenerationEntry = {
 };
 
 const globalState = globalThis as typeof globalThis & {
-  __olliveGenerationMap?: Map<string, GenerationEntry>;
+  __llmInferenceGenerationMap?: Map<string, GenerationEntry>;
 };
 
 const generationMap =
-  globalState.__olliveGenerationMap ?? new Map<string, GenerationEntry>();
+  globalState.__llmInferenceGenerationMap ?? new Map<string, GenerationEntry>();
 
-if (!globalState.__olliveGenerationMap) {
-  globalState.__olliveGenerationMap = generationMap;
+if (!globalState.__llmInferenceGenerationMap) {
+  globalState.__llmInferenceGenerationMap = generationMap;
 }
 
 export function registerGeneration(

@@ -8,8 +8,8 @@ const DEFAULT_MAX_RETRIES = 5;
 const DEFAULT_RECONCILIATION_INTERVAL_MS = 15_000;
 
 const globalQueueState = globalThis as typeof globalThis & {
-  __olliveRedisQueueConnection?: IORedis;
-  __olliveInferenceQueue?: Queue<{ eventId: string }>;
+  __llmInferenceRedisQueueConnection?: IORedis;
+  __llmInferenceQueue?: Queue<{ eventId: string }>;
 };
 
 function parsePositiveInt(value: string | undefined, fallback: number) {
@@ -47,16 +47,16 @@ export function createRedisConnection() {
 }
 
 function getQueueConnection() {
-  if (!globalQueueState.__olliveRedisQueueConnection) {
-    globalQueueState.__olliveRedisQueueConnection = createRedisConnection();
+  if (!globalQueueState.__llmInferenceRedisQueueConnection) {
+    globalQueueState.__llmInferenceRedisQueueConnection = createRedisConnection();
   }
 
-  return globalQueueState.__olliveRedisQueueConnection;
+  return globalQueueState.__llmInferenceRedisQueueConnection;
 }
 
 export function getInferenceQueue() {
-  if (!globalQueueState.__olliveInferenceQueue) {
-    globalQueueState.__olliveInferenceQueue = new Queue<{ eventId: string }>(
+  if (!globalQueueState.__llmInferenceQueue) {
+    globalQueueState.__llmInferenceQueue = new Queue<{ eventId: string }>(
       getIngestionQueueName(),
       {
         connection: getQueueConnection(),
@@ -73,7 +73,7 @@ export function getInferenceQueue() {
     );
   }
 
-  return globalQueueState.__olliveInferenceQueue;
+  return globalQueueState.__llmInferenceQueue;
 }
 
 export async function enqueueInferenceJob(eventId: string) {
@@ -113,13 +113,13 @@ export async function enqueueInferenceJob(eventId: string) {
 }
 
 export async function closeInferenceQueueResources() {
-  if (globalQueueState.__olliveInferenceQueue) {
-    await globalQueueState.__olliveInferenceQueue.close();
-    globalQueueState.__olliveInferenceQueue = undefined;
+  if (globalQueueState.__llmInferenceQueue) {
+    await globalQueueState.__llmInferenceQueue.close();
+    globalQueueState.__llmInferenceQueue = undefined;
   }
 
-  if (globalQueueState.__olliveRedisQueueConnection) {
-    await globalQueueState.__olliveRedisQueueConnection.quit();
-    globalQueueState.__olliveRedisQueueConnection = undefined;
+  if (globalQueueState.__llmInferenceRedisQueueConnection) {
+    await globalQueueState.__llmInferenceRedisQueueConnection.quit();
+    globalQueueState.__llmInferenceRedisQueueConnection = undefined;
   }
 }

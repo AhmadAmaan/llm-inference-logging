@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ollive Inference Console",
-  description: "A lightweight chatbot, inference logger, and ingestion system.",
+  title: "LLM Inference Logging",
+  description: "Provider-agnostic LLM inference logging with a TypeScript SDK, asynchronous ingestion, and a telemetry dashboard.",
 };
 
 export default function RootLayout({

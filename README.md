@@ -1,8 +1,10 @@
-# Ollive Full Stack Assignment
+# LLM Inference Logging
 
-Production-minded inference logging and ingestion system with a reference UI app, reusable SDK, and separate ingestion runtime.
+A provider-agnostic LLM inference logging system with a reusable TypeScript SDK, asynchronous ingestion worker, and an interactive chat and telemetry dashboard.
 
-## What This Repo Delivers
+Capture request latency, token usage, provider metadata, failures, and redacted previews through a single instrumentation boundary. PostgreSQL stores the event outbox and queryable logs; Redis and BullMQ handle background delivery. A built-in mock provider lets you explore the complete application without an API key.
+
+## Features
 
 - Reference UI app with multi-turn chat, conversation history, resume flow, and request cancellation
 - Reusable provider-agnostic SDK primitives under `src/lib/sdk`
@@ -50,13 +52,12 @@ Open [http://localhost:3000](http://localhost:3000)
 ### Local Node + local Postgres + Redis
 
 ```bash
-npm install
+npm ci
 cp .env.example .env
 npm run dev
-npm run worker
 ```
 
-This path expects Postgres and Redis to already be running locally and reachable through `.env`.
+In a second terminal, run `npm run worker`. This path expects Postgres and Redis to already be running locally and reachable through `.env`.
 
 Open [http://localhost:3000](http://localhost:3000)
 
@@ -67,7 +68,7 @@ Open [http://localhost:3000](http://localhost:3000)
 - `DEFAULT_PROVIDER` can pin `auto`, `openai`, `anthropic`, or `mock`
 - When no external provider is configured, the local fallback provider keeps chat, streaming, logging, and dashboards operational
 
-The fallback path is an explicit product decision: it keeps the application usable in development and review environments while exercising the exact same persistence, telemetry, and dashboard pipeline.
+Set `DEFAULT_PROVIDER=mock` for a local demo without external model calls. The mock provider exercises the same persistence, telemetry, and dashboard pipeline as the hosted providers; its output is simulated, not a model-quality benchmark.
 
 ## Core Endpoints
 
@@ -118,18 +119,20 @@ const result = await sdk.wrap({
 });
 ```
 
-## Interview Feedback Addressed
+## Design Principles
 
-- The UI app, SDK, and ingestion pipeline are now cleanly separated. The chat UI is only one consumer of the SDK; inference instrumentation lives under `src/lib/sdk`, while ingestion persistence and queue logic live under `src/lib/ingestion` and worker execution lives under `src/worker`.
+- Separate product behavior from telemetry: the chat UI is one SDK consumer; instrumentation lives under `src/lib/sdk`, ingestion persistence and queue logic under `src/lib/ingestion`, and worker execution under `src/worker`.
 - The SDK is wrapper-first and app-agnostic. A consuming app can call `createInferenceSdk(...).wrap(...)` around any inference function instead of depending on chat-specific code paths.
-- Monkey-patching now exists at two levels: `instrumentFetch(...)` provides provider-agnostic HTTP interception, while `instrumentOpenAIClient(...)` and `instrumentAnthropicClient(...)` patch common provider SDK client surfaces directly.
-- Redaction is no longer only regex-based. The pipeline first classifies content into high-risk domains, then applies confidence-based document suppression, structured field redaction, and finally pattern/entity masking.
-- Ingestion is now asynchronous out of process. The API persists raw events to `inference_events`, publishes `eventId` to Redis through BullMQ, and a dedicated worker materializes `inference_logs`.
+- Keep monkey-patching optional: `instrumentFetch(...)` provides provider-agnostic HTTP interception, while `instrumentOpenAIClient(...)` and `instrumentAnthropicClient(...)` patch common provider SDK client surfaces directly.
+- Use layered redaction: classify content into high-risk domains, apply confidence-based document suppression and structured field redaction, then mask recognizable entities.
+- Process ingestion out of process: persist events to `inference_events`, publish `eventId` to Redis through BullMQ, and materialize `inference_logs` in a dedicated worker.
 
 ## Current Boundaries
 
 - The UI app and ingestion worker are separate runtimes and should be deployed separately when using the queue-backed path.
 - The queue is used for active delivery, while PostgreSQL remains the durable source of truth through the `inference_events` outbox table.
+- Authentication and tenant isolation are not implemented. Run the demo in a trusted local environment; deployment templates alone do not make it safe to expose publicly.
+- Full chat messages are stored without redaction. Preview redaction is a best-effort rule-based layer, not a guarantee that all sensitive data is removed.
 
 ## Architecture Summary
 
@@ -157,7 +160,7 @@ The system stores full chat content in `messages`, but only redacted previews in
 ## Deliberate Tradeoffs
 
 - PostgreSQL is the default store because it is portable, familiar, and realistic for deployment and analytics.
-- Schema bootstrap runs on first database access to reduce local setup friction and keep the repo easy to evaluate.
+- Schema bootstrap runs on first database access to reduce local setup friction.
 - The SDK is designed wrapper-first because explicit instrumentation is more predictable and stable across providers and client versions.
 - Monkey-patching is supported as an optional convenience layer because it lowers adoption friction for existing HTTP-based integrations and provider clients, but it is intentionally not the primary integration mode.
 - Streaming is implemented over NDJSON because it is simple to reason about in route handlers and easy to parse incrementally in the browser.
@@ -172,17 +175,6 @@ The system stores full chat content in `messages`, but only redacted previews in
 - Each ingestion event is also written to `inference_events` before queue publication, so the worker can reconcile pending or failed outbox rows from PostgreSQL.
 - The current design does not yet implement a dead-letter queue or a hard cap on reconciliation retries; those are the next production-hardening steps.
 
-## Bonus Features Included
-
-- Multi-provider routing
-- Streaming responses
-- Telemetry dashboard
-- Docker Compose local environment
-- Event-first ingestion with replayable pending events
-- Queue-backed asynchronous ingestion from SDK emission through dedicated worker materialization
-- PII-aware log preview redaction
-- Self-hosted Kubernetes manifests under [k8s/README.md](./k8s/README.md)
-
 ## Verification
 
 ```bash
@@ -190,7 +182,7 @@ npm run lint
 npm run build
 ```
 
-Both commands pass in this repo.
+These checks cover linting, compilation, and type checking. They do not replace an end-to-end test with PostgreSQL, Redis, and a running worker.
 
 ## Deployment Notes
 
@@ -199,14 +191,9 @@ Both commands pass in this repo.
 - A Helm chart is also provided under [helm/README.md](./helm/README.md) for a templated deployment path.
 - For horizontally scaled app replicas, keep cancellation state out of process if you need multi-replica cancellation semantics; ingestion itself is already separated behind the queue and worker.
 
-## What I Would Improve With More Time
+### Existing installations
 
-- Add integration tests that cover streaming, cancellation, ingestion retries, and multi-provider routing end to end.
-- Move cancellation state and event processing onto shared infrastructure so the app can scale beyond a single active replica.
-- Add dead-letter handling, bounded reconciliation retry policy, and queue-depth alerting around the worker path.
-- Add authentication, tenant boundaries, and stronger policy-driven redaction for production environments.
-- Move from rule-backed classification to dedicated external classification services where domain-specific policy enforcement requires stronger guarantees.
-- Extend dashboarding with percentile latency, provider cost tracking, and alert-oriented operational views.
+The default database name is `llm_inference`; deployment examples use the `llm-inference-logging` namespace and image. When upgrading an existing installation, retain its database URL, Compose project name, Helm release name, resource names, and persistent-volume bindings through configuration overrides. Changing defaults does not rename or migrate an existing database. Back up data before migration and restart the app and worker after updating configuration; do not delete volumes to resolve a naming mismatch.
 
 ## Additional Notes
 
